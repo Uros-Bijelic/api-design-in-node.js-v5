@@ -8,5 +8,13 @@ app.get('/health', (req, res) => {
     }).status(200);
 });
 
+app.post('/cake', (req, res) => {
+    res.send('ok');
+});
+
+app.post('/cake', (req, res) => {
+    res.send('next');
+});
+
 export { app };
 export default app;

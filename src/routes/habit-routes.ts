@@ -1,29 +1,44 @@
 import { Router } from 'express';
+import z from 'zod';
+import { validateBody, validateParams } from '../middleware/validation.ts';
 
-const router = Router();
+const createHabitSchema = z.object({
+    name: z.string(),
+});
 
-router.get('/', (req, res) => {
+const completeParamsSchema = z.object({
+    id: z.string().max(3),
+});
+
+const habitRoutes = Router();
+
+habitRoutes.get('/', (req, res) => {
     res.json({ message: 'habbits' });
 });
 
-router.get('/:id', (req, res) => {
+habitRoutes.get('/:id', (req, res) => {
     res.json({ message: 'got one habbit' });
 });
 
-router.post('/', (req, res) => {
+habitRoutes.post('/', validateBody(createHabitSchema), (req, res) => {
     res.json({ message: 'Created habit' });
 });
 
-router.delete('/:id', (req, res) => {
+habitRoutes.delete('/:id', (req, res) => {
     res.json({ message: 'deleted habit' });
 });
 
-router.post('/', (req, res) => {
+habitRoutes.post('/', (req, res) => {
     res.json({ message: 'Created habit' });
 });
 
-router.post('/:id/complete', (req, res) => {
-    res.json({ message: 'Created habit' });
-});
+habitRoutes.post(
+    '/:id/complete',
+    validateParams(completeParamsSchema),
+    validateBody(createHabitSchema),
+    (req, res) => {
+        res.json({ message: 'Created habit' });
+    },
+);
 
-export { router };
+export { habitRoutes };

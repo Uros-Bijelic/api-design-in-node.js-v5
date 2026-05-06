@@ -105,7 +105,7 @@ async function seed() {
     }
 }
 
-// Run seed if this file is executed directly
+// Run seed if this file is executed directly.
 if (import.meta.url === `file://${process.argv[1]}`) {
     seed()
         .then(() => process.exit(0))

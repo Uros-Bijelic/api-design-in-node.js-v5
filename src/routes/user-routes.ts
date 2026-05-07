@@ -1,6 +1,9 @@
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth.ts';
 
 const userRoutes = Router();
+
+userRoutes.use(authenticateToken);
 
 userRoutes.get('/', (req, res) => {
     res.json({ message: 'users' });

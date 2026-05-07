@@ -2,10 +2,17 @@ import { Router } from 'express';
 import z from 'zod';
 import { validateBody, validateParams } from '../middleware/validation.ts';
 import { authenticateToken } from '../middleware/auth.ts';
+import { createHabit, getUserHabits } from '../controllers/habit-controller.ts';
 
-const createHabitSchema = z.object({
-    name: z.string()
+export const createHabitSchema = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    frequency: z.string(),
+    targetCount: z.number(),
+    tagIds: z.array(z.string()).optional()
 });
+
+export type CreateHabitSchema = z.infer<typeof createHabitSchema>;
 
 const completeParamsSchema = z.object({
     id: z.string().max(3)
@@ -15,17 +22,13 @@ const habitRoutes = Router();
 
 habitRoutes.use(authenticateToken);
 
-habitRoutes.get('/', (req, res) => {
-    res.json({ message: 'habbits' });
-});
+habitRoutes.get('/', getUserHabits);
 
 habitRoutes.get('/:id', (req, res) => {
     res.json({ message: 'got one habbit' });
 });
 
-habitRoutes.post('/', validateBody(createHabitSchema), (req, res) => {
-    res.json({ message: 'Created habit' });
-});
+habitRoutes.post('/', validateBody(createHabitSchema), createHabit);
 
 habitRoutes.delete('/:id', (req, res) => {
     res.json({ message: 'deleted habit' });

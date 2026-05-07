@@ -1,16 +1,19 @@
 import { Router } from 'express';
 import z from 'zod';
 import { validateBody, validateParams } from '../middleware/validation.ts';
+import { authenticateToken } from '../middleware/auth.ts';
 
 const createHabitSchema = z.object({
-    name: z.string(),
+    name: z.string()
 });
 
 const completeParamsSchema = z.object({
-    id: z.string().max(3),
+    id: z.string().max(3)
 });
 
 const habitRoutes = Router();
+
+habitRoutes.use(authenticateToken);
 
 habitRoutes.get('/', (req, res) => {
     res.json({ message: 'habbits' });
@@ -38,7 +41,7 @@ habitRoutes.post(
     validateBody(createHabitSchema),
     (req, res) => {
         res.json({ message: 'Created habit' });
-    },
+    }
 );
 
 export { habitRoutes };

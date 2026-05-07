@@ -5,7 +5,7 @@ import {
     timestamp,
     uuid,
     varchar,
-    boolean,
+    boolean
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
@@ -18,7 +18,7 @@ export const users = pgTable('users', {
     firstName: varchar('first_name', { length: 50 }),
     lastName: varchar('last_name', { length: 50 }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
 export const habits = pgTable('habits', {
@@ -32,7 +32,7 @@ export const habits = pgTable('habits', {
     targetCount: integer('target_count').default(1),
     isActive: boolean('is_active').default(true),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
 export const entries = pgTable('entries', {
@@ -42,7 +42,7 @@ export const entries = pgTable('entries', {
         .notNull(),
     completionDate: timestamp('completion_date').defaultNow().notNull(),
     note: text('note'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
 export const tags = pgTable('tags', {
@@ -50,7 +50,7 @@ export const tags = pgTable('tags', {
     name: varchar('name', { length: 50 }).notNull().unique(),
     color: varchar('color', { length: 7 }).default('#6b7280'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
 export const habitTags = pgTable('habitTags', {
@@ -61,42 +61,42 @@ export const habitTags = pgTable('habitTags', {
     tagId: uuid('tag_id')
         .references(() => tags.id, { onDelete: 'cascade' })
         .notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
 export const userRelations = relations(users, ({ many }) => ({
-    habits: many(habits),
+    habits: many(habits)
 }));
 
 export const habitRelations = relations(habits, ({ one, many }) => ({
     user: one(users, {
         fields: [habits.userId],
-        references: [users.id],
+        references: [users.id]
     }),
     entries: many(entries),
-    habitTags: many(habitTags),
+    habitTags: many(habitTags)
 }));
 
 export const entriesRelations = relations(entries, ({ one }) => ({
     habit: one(habits, {
         fields: [entries.habitId],
-        references: [habits.id],
-    }),
+        references: [habits.id]
+    })
 }));
 
 export const tagsRealtions = relations(tags, ({ many }) => ({
-    habitTags: many(habitTags),
+    habitTags: many(habitTags)
 }));
 
 export const habitTagsRelations = relations(habitTags, ({ one }) => ({
     habit: one(habits, {
         fields: [habitTags.habitId],
-        references: [habits.id],
+        references: [habits.id]
     }),
     tag: one(tags, {
         fields: [habitTags.tagId],
-        references: [tags.id],
-    }),
+        references: [tags.id]
+    })
 }));
 
 export type User = typeof users.$inferSelect;
@@ -108,3 +108,4 @@ export type HabitTag = typeof habitTags.$inferSelect;
 
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
+export const insertHabitSchema = createInsertSchema(habits);

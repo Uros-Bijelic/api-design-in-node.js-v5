@@ -30,7 +30,7 @@ export const createHabit = async (req: AuthenticateRequest, res: Response) => {
                 })
                 .returning();
 
-            if (tagIds && tagIds.length) {
+            if (tagIds && tagIds.length > 0) {
                 const habitTagValues = tagIds.map((tagId) => ({
                     habitId: newHabit.id,
                     tagId
@@ -67,7 +67,8 @@ export const getUserHabits = async (
                         tag: true
                     }
                 }
-            }
+            },
+            orderBy: [desc(habits.createdAt)]
         });
 
         const habitsWithTags = userHabitsWithTags.map((habit) => ({
@@ -77,13 +78,59 @@ export const getUserHabits = async (
         }));
 
         res.status(200).json({
-            habits: habitsWithTags,
-            bla: userHabitsWithTags
+            habits: habitsWithTags
         });
     } catch (e) {
         console.error('Error getting habits', e);
         res.status(500).json({
             error: 'Failed to get habit'
+        });
+    }
+};
+
+export const updateHabit = async (req: AuthenticateRequest, res: Response) => {
+    try {
+        const id = req.params.id;
+        const { tagIds, ...updates } = req.body;
+
+        const habit = await db.transaction(async (tx) => {
+            const [updatedHabit] = await tx
+                .update(habits)
+                .set({
+                    ...updates,
+                    updatedAt: new Date()
+                })
+                .where(and(eq(habits.id, id), eq(habits.userId, req.user!.id)))
+                .returning();
+
+            if (!updatedHabit) {
+                return res.status(401).end();
+            }
+
+            if (tagIds !== undefined) {
+                await tx.delete(habitTags).where(eq(habitTags.habitId, id));
+
+                if (tagIds.length > 0) {
+                    const habitTagsValues = tagIds.map((tagId: string) => ({
+                        habitId: id,
+                        tagId
+                    }));
+
+                    await tx.insert(habitTags).values(habitTagsValues);
+                }
+            }
+
+            return updatedHabit;
+        });
+
+        res.json({
+            message: 'Habit was updated',
+            habit
+        });
+    } catch (e) {
+        console.error('Error updating habit', e);
+        res.status(500).json({
+            error: 'Failed to update habit'
         });
     }
 };
